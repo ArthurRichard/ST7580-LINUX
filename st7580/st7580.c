@@ -99,7 +99,6 @@ static int ST7580SendFrame(ST7580Frame *frame);
  * @{
  */
 
-#define USE_RTSCTS
 static int fd;	/*File Descriptor*/
 static pthread_t serial_poll_thread;
 int RTS_flag;
@@ -213,8 +212,8 @@ void ST7580InterfaceInit(void)
 		return;
 	}
 
-	/* Get the current attributes of the Serial port */
-	//memset(&uart_settings, 0, sizeof(uart_settings));
+	/* Cleans and get the current attributes from the serial port */
+	memset(&uart_settings, 0, sizeof(uart_settings));
 
 	if(tcgetattr(fd, &uart_settings) != 0)
 	{
@@ -236,7 +235,7 @@ void ST7580InterfaceInit(void)
 
 	uart_settings.c_iflag &= ~(IXON | IXOFF | IXANY);          /* Disable XON/XOFF flow control both i/p and o/p */
 	uart_settings.c_iflag &= ~(ICANON | ECHO | ECHOE | ISIG);  /* Non Cannonical mode     */
-	uart_settings.c_iflag &= ~IGNBRK;         // disable break processing
+	uart_settings.c_iflag &= ~IGNBRK;         /* disable break processing */
 	uart_settings.c_cc[VTIME] = 0;
 	uart_settings.c_cc[VMIN] = 1;
 
@@ -254,7 +253,7 @@ void ST7580InterfaceInit(void)
 	RTS_flag = TIOCM_RTS;
 	DTR_flag = TIOCM_DTR;
 	ioctl(fd,TIOCMBIC, &RTS_flag);	//Pullup RTS pin
-	#ifdef USB_UART		//problem with the USB UART adapters, too much latency, BBB uart has no usable ioctl pin other than RTSnan,
+	#ifdef USB_UART					//problem with the USB UART adapters, too much latency, BBB uart has no usable ioctl pin other than RTSnan,
 	ioctl(fd, TIOCMBIS, &DTR_flag); //Pulldown DTR pin
 	usleep(1500000);
 	ioctl(fd,TIOCMBIC, &DTR_flag);	//Pullup DTR pin
@@ -1359,7 +1358,6 @@ void *serial_poll(void *param)
 			ssize_t rc = read(fd, buff, sizeof(buff));
 
 			buff[rc] = 0;
-
 			if (rc > 0)
 			{
 				/* You've got rc characters. do something with buff */
