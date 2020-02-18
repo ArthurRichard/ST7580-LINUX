@@ -1,0 +1,8 @@
+
+.cproject
+.gitattributes
+.project
+*.mk
+*.d
+*.o
+.settings/language.settings.xml
